@@ -72,7 +72,7 @@ const Queries = (props) => {
                 />
               </div>
               <button className="mt-3 btn btn-outline-primary" type="submit">
-                Get Owner
+                Get NFT Owner
               </button>
               {tokenIdForOwnerNotFound ? (
                 <div className="alert alert-danger alert-dissmissible mt-4">
@@ -86,7 +86,7 @@ const Queries = (props) => {
             <p className="mt-4">{tokenOwner}</p>
           </div>
           <div className="col-md-7">
-            <h5>Get Token Metadata</h5>
+            <h5>Get NFT Metadata</h5>
             <form onSubmit={getTokenMetadata}>
               <div className="form-group">
                 <input

@@ -28,13 +28,13 @@ const Navbar = () => {
               </Link>
             </li>
             <li className="nav-item">
-              <Link to="/mint" className="nav-link">
-                Mint NFT
+              <Link to="/marketplace" className="nav-link">
+                Marketplace
               </Link>
             </li>
             <li className="nav-item">
-              <Link to="/marketplace" className="nav-link">
-                Marketplace
+              <Link to="/mint" className="nav-link">
+                Mint NFT
               </Link>
             </li>
             <li className="nav-item">

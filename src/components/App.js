@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { HashRouter, Route } from "react-router-dom";
 import "./App.css";
 import Web3 from "web3";
-import CryptoBoys from "../abis/CryptoBoys.json";
+import Onidex from "../abis/Onidex.json";
 
 import FormAndPreview from "../components/FormAndPreview/FormAndPreview";
 import AllCryptoBoys from "./AllCryptoBoys/AllCryptoBoys";
@@ -27,9 +27,9 @@ class App extends Component {
     this.state = {
       accountAddress: "",
       accountBalance: "",
-      cryptoBoysContract: null,
-      cryptoBoysCount: 0,
-      cryptoBoys: [],
+      onidexContract: null,
+      nftsCount: 0,
+      nfts: [],
       loading: true,
       metamaskConnected: false,
       contractDetected: false,
@@ -42,7 +42,7 @@ class App extends Component {
     };
   }
 
-  componentWillMount = async () => {
+  componentDidMount = async () => {
     await this.loadWeb3();
     await this.loadBlockchainData();
     await this.setMetaData();
@@ -56,7 +56,7 @@ class App extends Component {
         lastMintTime: localStorage.getItem(this.state.accountAddress),
       });
       this.state.lastMintTime === undefined || this.state.lastMintTime === null
-        ? (mintBtn.innerHTML = "Mint My Crypto Boy")
+        ? (mintBtn.innerHTML = "Mint My NFT")
         : this.checkIfCanMint(parseInt(this.state.lastMintTime));
     }
   };
@@ -70,7 +70,7 @@ class App extends Component {
       const diff = countDownTime - now;
       if (diff < 0) {
         mintBtn.removeAttribute("disabled");
-        mintBtn.innerHTML = "Mint My Crypto Boy";
+        mintBtn.innerHTML = "Mint My NFT";
         localStorage.removeItem(this.state.accountAddress);
         clearInterval(interval);
       } else {
@@ -85,6 +85,15 @@ class App extends Component {
   loadWeb3 = async () => {
     if (window.ethereum) {
       window.web3 = new Web3(window.ethereum);
+    } else if (window.web3) {
+      window.web3 = new Web3(window.web3.currentProvider);
+    } else {
+      window.alert(
+        "Non-Ethereum browser detected. You should consider trying MetaMask!"
+      );
+    }
+    if (window.BinanceChain) {
+      window.web3 = new Web3(window.BinanceChain);
     } else if (window.web3) {
       window.web3 = new Web3(window.web3.currentProvider);
     } else {
@@ -108,33 +117,33 @@ class App extends Component {
       this.setState({ accountBalance });
       this.setState({ loading: false });
       const networkId = await web3.eth.net.getId();
-      const networkData = CryptoBoys.networks[networkId];
+      const networkData = Onidex.networks[networkId];
       if (networkData) {
         this.setState({ loading: true });
-        const cryptoBoysContract = web3.eth.Contract(
-          CryptoBoys.abi,
+        const onidexContract = web3.eth.Contract(
+          Onidex.abi,
           networkData.address
         );
-        this.setState({ cryptoBoysContract });
+        this.setState({ onidexContract });
         this.setState({ contractDetected: true });
-        const cryptoBoysCount = await cryptoBoysContract.methods
-          .cryptoBoyCounter()
+        const nftsCount = await onidexContract.methods
+          .nftCounter()
           .call();
-        this.setState({ cryptoBoysCount });
-        for (var i = 1; i <= cryptoBoysCount; i++) {
-          const cryptoBoy = await cryptoBoysContract.methods
-            .allCryptoBoys(i)
+        this.setState({ nftsCount });
+        for (var i = 1; i <= nftsCount; i++) {
+          const nft = await onidexContract.methods
+            .allNFTs(i)
             .call();
           this.setState({
-            cryptoBoys: [...this.state.cryptoBoys, cryptoBoy],
+            nfts: [...this.state.nfts, nft],
           });
         }
-        let totalTokensMinted = await cryptoBoysContract.methods
+        let totalTokensMinted = await onidexContract.methods
           .getNumberOfTokensMinted()
           .call();
         totalTokensMinted = totalTokensMinted.toNumber();
         this.setState({ totalTokensMinted });
-        let totalTokensOwnedByAccount = await cryptoBoysContract.methods
+        let totalTokensOwnedByAccount = await onidexContract.methods
           .getTotalNumberOfTokensOwnedByAnAddress(this.state.accountAddress)
           .call();
         totalTokensOwnedByAccount = totalTokensOwnedByAccount.toNumber();
@@ -153,18 +162,18 @@ class App extends Component {
   };
 
   setMetaData = async () => {
-    if (this.state.cryptoBoys.length !== 0) {
-      this.state.cryptoBoys.map(async (cryptoboy) => {
-        const result = await fetch(cryptoboy.tokenURI);
+    if (this.state.nfts.length !== 0) {
+      this.state.nfts.map(async (nft) => {
+        const result = await fetch(nft.tokenURI);
         const metaData = await result.json();
         this.setState({
-          cryptoBoys: this.state.cryptoBoys.map((cryptoboy) =>
-            cryptoboy.tokenId.toNumber() === Number(metaData.tokenId)
+          nfts: this.state.nfts.map((nft) =>
+            nft.tokenId.toNumber() === Number(metaData.tokenId)
               ? {
-                  ...cryptoboy,
+                  ...nft,
                   metaData,
                 }
-              : cryptoboy
+              : nft
           ),
         });
       });
@@ -177,7 +186,7 @@ class App extends Component {
     let colorsUsed = [];
     for (let i = 0; i < colorsArray.length; i++) {
       if (colorsArray[i] !== "") {
-        let colorIsUsed = await this.state.cryptoBoysContract.methods
+        let colorIsUsed = await this.state.onidexContract.methods
           .colorExists(colorsArray[i])
           .call();
         if (colorIsUsed) {
@@ -187,7 +196,7 @@ class App extends Component {
         }
       }
     }
-    const nameIsUsed = await this.state.cryptoBoysContract.methods
+    const nameIsUsed = await this.state.onidexContract.methods
       .tokenNameExists(name)
       .call();
     if (colorsUsed.length === 0 && !nameIsUsed) {
@@ -209,14 +218,14 @@ class App extends Component {
         bodyBorderColor,
       } = colors;
       let previousTokenId;
-      previousTokenId = await this.state.cryptoBoysContract.methods
-        .cryptoBoyCounter()
+      previousTokenId = await this.state.onidexContract.methods
+        .nftCounter()
         .call();
       previousTokenId = previousTokenId.toNumber();
       const tokenId = previousTokenId + 1;
       const tokenObject = {
-        tokenName: "Crypto Boy",
-        tokenSymbol: "CB",
+        tokenName: "Onidex NFT",
+        tokenSymbol: "ONI",
         tokenId: `${tokenId}`,
         name: name,
         metaData: {
@@ -243,8 +252,8 @@ class App extends Component {
       const cid = await ipfs.add(JSON.stringify(tokenObject));
       let tokenURI = `https://ipfs.infura.io/ipfs/${cid.path}`;
       const price = window.web3.utils.toWei(tokenPrice.toString(), "Ether");
-      this.state.cryptoBoysContract.methods
-        .mintCryptoBoy(name, tokenURI, price, colorsArray)
+      this.state.onidexContract.methods
+        .mintNFT(name, tokenURI, price, colorsArray)
         .send({ from: this.state.accountAddress })
         .on("confirmation", () => {
           localStorage.setItem(this.state.accountAddress, new Date().getTime());
@@ -265,7 +274,7 @@ class App extends Component {
 
   toggleForSale = (tokenId) => {
     this.setState({ loading: true });
-    this.state.cryptoBoysContract.methods
+    this.state.onidexContract.methods
       .toggleForSale(tokenId)
       .send({ from: this.state.accountAddress })
       .on("confirmation", () => {
@@ -277,7 +286,7 @@ class App extends Component {
   changeTokenPrice = (tokenId, newPrice) => {
     this.setState({ loading: true });
     const newTokenPrice = window.web3.utils.toWei(newPrice, "Ether");
-    this.state.cryptoBoysContract.methods
+    this.state.onidexContract.methods
       .changeTokenPrice(tokenId, newTokenPrice)
       .send({ from: this.state.accountAddress })
       .on("confirmation", () => {
@@ -288,7 +297,7 @@ class App extends Component {
 
   buyCryptoBoy = (tokenId, price) => {
     this.setState({ loading: true });
-    this.state.cryptoBoysContract.methods
+    this.state.onidexContract.methods
       .buyToken(tokenId)
       .send({ from: this.state.accountAddress, value: price })
       .on("confirmation", () => {
@@ -321,6 +330,19 @@ class App extends Component {
                 )}
               />
               <Route
+                path="/marketplace"
+                render={() => (
+                  <AllCryptoBoys
+                    accountAddress={this.state.accountAddress}
+                    cryptoBoys={this.state.nfts}
+                    totalTokensMinted={this.state.totalTokensMinted}
+                    changeTokenPrice={this.changeTokenPrice}
+                    toggleForSale={this.toggleForSale}
+                    buyCryptoBoy={this.buyCryptoBoy}
+                  />
+                )}
+              />
+              <Route
                 path="/mint"
                 render={() => (
                   <FormAndPreview
@@ -333,24 +355,11 @@ class App extends Component {
                 )}
               />
               <Route
-                path="/marketplace"
-                render={() => (
-                  <AllCryptoBoys
-                    accountAddress={this.state.accountAddress}
-                    cryptoBoys={this.state.cryptoBoys}
-                    totalTokensMinted={this.state.totalTokensMinted}
-                    changeTokenPrice={this.changeTokenPrice}
-                    toggleForSale={this.toggleForSale}
-                    buyCryptoBoy={this.buyCryptoBoy}
-                  />
-                )}
-              />
-              <Route
                 path="/my-tokens"
                 render={() => (
                   <MyCryptoBoys
                     accountAddress={this.state.accountAddress}
-                    cryptoBoys={this.state.cryptoBoys}
+                    cryptoBoys={this.state.nfts}
                     totalTokensOwnedByAccount={
                       this.state.totalTokensOwnedByAccount
                     }
@@ -360,7 +369,7 @@ class App extends Component {
               <Route
                 path="/queries"
                 render={() => (
-                  <Queries cryptoBoysContract={this.state.cryptoBoysContract} />
+                  <Queries onidexContract={this.state.onidexContract} />
                 )}
               />
             </HashRouter>
