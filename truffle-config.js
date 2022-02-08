@@ -4,10 +4,6 @@ const HDWalletProvider = require('@truffle/hdwallet-provider');
 const fs = require('fs');
 const mnemonic = fs.readFileSync(".secret").toString().trim();
 
-const privateKeys = [
-  "974e2a440c1dda11e247e979723cf31240ad8d141e70e42b9a41f6060d25453e"
-]
-
 module.exports = {
   networks: {
     development: {
@@ -15,7 +11,7 @@ module.exports = {
       port: 7545,
       network_id: "*", // Match any network id
     },
-    testnet: {
+    milkomeda: {
       provider: () => new HDWalletProvider(mnemonic, `https://data-seed-prebsc-1-s1.binance.org:8545`),
       network_id: 97,
       confirmations: 10,
