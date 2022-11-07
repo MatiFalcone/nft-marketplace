@@ -6,7 +6,7 @@ const ContractNotDeployed = () => {
       <h3>Onidex Contract Not Deployed To This Network.</h3>
       <hr className="my-4" />
       <p className="lead">
-        Connect Metamask to Binance Smart Chain Testnet, IoTeX Testnet Or Localhost 7545 running a custom RPC
+        Connect Metamask to Polygon - Mumbai
         like Ganache.
       </p>
     </div>

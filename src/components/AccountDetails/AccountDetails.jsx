@@ -6,8 +6,8 @@ const AccountDetails = ({ accountAddress, accountBalance }) => {
       <div className="jumbotron">
         <h1 className="display-5">Onidex NFT Marketplace</h1>
         <p className="lead">
-          This is an NFT marketplace where you can mint ERC721 implemented{" "}
-          <i>NFTs</i> in the BSC and IoTeX blockchains.
+          This is an NFT marketplace where you can mint ERC721{" "}
+          <i>NFTs</i> deployed in the Polygon - Mumbai blockchain.
         </p>
         <hr className="my-4" />
         <p className="lead">Account address :</p>

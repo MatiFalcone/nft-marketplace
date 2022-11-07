@@ -27,7 +27,7 @@ class App extends Component {
     this.state = {
       accountAddress: "",
       accountBalance: "",
-      onidexContract: null,
+      onidexContract: "0x5CD674A9B3dF35B2929cC0482b60a342CA798b7C",
       nftsCount: 0,
       nfts: [],
       loading: true,
